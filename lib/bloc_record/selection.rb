@@ -152,7 +152,7 @@ module Selection
         expression = args.first
       when Hash
         expression_hash = BlocRecord::Utility.convert_keys(args.first)
-        expression = expression_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")}
+        expression = expression_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
       end
     end
 
@@ -167,7 +167,18 @@ module Selection
 
   def order(*args)
     if args.count > 1
-      order = args.join(",")
+      order = args.map do |arg|
+        case arg
+        when String
+          arg
+        when Symbol
+          arg.to_s
+        when Hash
+          arg_hash = BlocRecord::Utility.convert_keys(arg)
+          arg_hash.map {|key, value| "#{key} #{BlocRecord::Utility.sql_strings(value)}"}
+        end
+      end
+      order = order.join(",")
     else
       order = args.first.to_s
     end

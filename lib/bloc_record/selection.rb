@@ -201,10 +201,20 @@ module Selection
         rows = connection.execute <<-SQL
           SELECT * FROM #{table} #{BlocRecord::Utility.sql_strings(args.first)};
         SQL
-      elsif Symbol
+      when Symbol
         rows = connection.execute <<-SQL
           SELECT * FROM #{table}
           INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
+        SQL
+      when Hash
+        joins = ''
+        join_hash = BlocRecord::Utility.convert_keys(args.first)
+        join_hash.each do |key, value|
+          joins += "INNER JOIN #{key} ON #{key}.#{table}_id = #{table}.id INNER JOIN #{BlocRecord::Utility.sql_strings(value)} ON #{BlocRecord::Utility.sql_strings(value)}.#{key}_id = #{key}.id"
+        end
+
+        rows = connection.execute <<-SQL
+         SELECT * FROM #{table} #{joins}
         SQL
       end
     end

@@ -90,5 +90,16 @@ module Persistence
     def update_all(updates)
       update(nil, updates)
     end
+
+    def method_missing(m, new_value, &block)
+      attribute = m.to_s.gsub(/update_/,'')
+      if attributes.include?(attribute)
+        updates = Hash.new
+        update[attribute] = new_value
+        self.class.update(self.id, updates)
+      else
+        p "Invalid attribute"
+      end
+    end
   end
 end

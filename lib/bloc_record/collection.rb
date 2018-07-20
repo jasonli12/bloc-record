@@ -28,5 +28,10 @@ module BlocRecord
       end
       subcollection
     end
+
+    def destroy_all
+      ids = self.map(&:id)
+      self.class.destroy(ids)
+    end
   end
 end

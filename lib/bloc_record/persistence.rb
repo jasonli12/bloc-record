@@ -109,7 +109,9 @@ module Persistence
     end
 
     def destroy_all(conditions_hash=nil)
-      if conditions_hash && !conditions_hash.empty?
+      case conditions_hash
+      when Hash
+        !conditions_hash.empty?
         conditions_hash = BlocRecord::Utility.convert_keys(conditions_hash)
         conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
 
@@ -117,12 +119,23 @@ module Persistence
           DELETE FROM #{table}
           WHERE #{conditions};
         SQL
+      when String
+        connection.execute <<-SQL
+          DELETE FROM #{table}
+          WHERE #{conditions_hash};
+        SQL
+      when Array #assume array is passed as an argument to the function
+        condition = conditions_hash[0].gsub(/\?/,conditions_hash[1])
+        connection.execute <<-SQL
+          DELETE FROM #{table}
+          WHERE #{condition};
+        SQL
       else
         connection.execute <<-SQL
           DELETE FROM #{table}
         SQL
       end
-      
+
       true
     end
 

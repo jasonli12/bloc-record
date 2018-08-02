@@ -1,6 +1,6 @@
 module BlocRecord
-  def self.connect_to(filename)
-    @database_filename = filename
+  def self.connect_to(filename, db)
+    @database_filename = filename.gsub(/.db/, "." + db.to_s)
   end
 
   def self.database_filename
